@@ -85,7 +85,7 @@ export default function Contact() {
                   href="mailto:ashikrurahaman.te@gmail.com"
                   className="text-foreground hover:text-primary transition"
                 >
-                  ashikrurahaman.te@gmail.com
+                  ashikurrahaman.te@gmail.com
                 </a>
               </CardContent>
             </Card>
