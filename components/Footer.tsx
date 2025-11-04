@@ -7,7 +7,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   const socialLinks = [
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
+    { icon: Linkedin, href: "https://www.linkedin.com/in/ashikur-rahaman-325a58239/", label: "LinkedIn" },
     { icon: Mail, href: "mailto:ashikrurahaman.te@gmail.com", label: "Email" },
   ]
 

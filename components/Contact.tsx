@@ -1,15 +1,19 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { motion } from "framer-motion"
+import emailjs from "@emailjs/browser"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Mail, Phone, MapPin } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Mail, Phone, MapPin, Loader2, Send } from "lucide-react"
+import { toast } from "sonner"
 
 export default function Contact() {
+  const formRef = useRef<HTMLFormElement>(null)
   const [formData, setFormData] = useState({ name: "", email: "", message: "" })
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -17,16 +21,33 @@ export default function Contact() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Create mailto link
-    const mailtoLink = `mailto:ashikrurahaman.te@gmail.com?subject=Portfolio Contact from ${formData.name}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`)}`
-    window.location.href = mailtoLink
-    setSubmitted(true)
-    setTimeout(() => {
+    setIsSubmitting(true)
+
+    try {
+      await emailjs.send(
+        "service_a5dykfi", // service ID
+        "template_jtptdip", // template ID
+        {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          title: "Message from portfolio",
+        },
+        "R31uN6UAp1bSud6ww" // public key
+      )
+
+      setSubmitted(true)
       setFormData({ name: "", email: "", message: "" })
-      setSubmitted(false)
-    }, 3000)
+      setTimeout(() => setSubmitted(false), 4000)
+      toast.success("Email send successfully")
+    } catch (error) {
+      console.error("EmailJS Error:", error)
+      toast.error("Failed to send message. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -56,12 +77,14 @@ export default function Contact() {
             <Card className="border-border bg-background">
               <CardHeader>
                 <CardTitle className="text-primary flex items-center gap-2">
-                  <Mail className="w-5 h-5" />
-                  Email
+                  <Mail className="w-5 h-5" /> Email
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <a href="mailto:ashikrurahaman.te@gmail.com" className="text-foreground hover:text-primary transition">
+                <a
+                  href="mailto:ashikrurahaman.te@gmail.com"
+                  className="text-foreground hover:text-primary transition"
+                >
                   ashikrurahaman.te@gmail.com
                 </a>
               </CardContent>
@@ -70,12 +93,14 @@ export default function Contact() {
             <Card className="border-border bg-background">
               <CardHeader>
                 <CardTitle className="text-primary flex items-center gap-2">
-                  <Phone className="w-5 h-5" />
-                  Phone
+                  <Phone className="w-5 h-5" /> Phone
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <a href="tel:+8801580698704" className="text-foreground hover:text-primary transition">
+                <a
+                  href="tel:+8801580698704"
+                  className="text-foreground hover:text-primary transition"
+                >
                   +88 01580 698704
                 </a>
               </CardContent>
@@ -84,8 +109,7 @@ export default function Contact() {
             <Card className="border-border bg-background">
               <CardHeader>
                 <CardTitle className="text-primary flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Location
+                  <MapPin className="w-5 h-5" /> Location
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -107,57 +131,70 @@ export default function Contact() {
                 <CardTitle className="text-primary">Send me a message</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                       Name
                     </label>
-                    <input
-                      type="text"
+                    <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       placeholder="Your name"
+                      className="bg-background border-input"
                     />
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                       Email
                     </label>
-                    <input
-                      type="email"
+                    <Input
                       id="email"
+                      type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       placeholder="your@email.com"
+                      className="bg-background border-input"
                     />
                   </div>
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
                       Message
                     </label>
-                    <textarea
+                    <Textarea
                       id="message"
                       name="message"
+                      rows={4}
                       value={formData.message}
                       onChange={handleChange}
                       required
-                      rows={4}
-                      className="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                       placeholder="Your message..."
-                    ></textarea>
+                      className="bg-background border-input resize-none"
+                    />
                   </div>
+
                   <Button
                     type="submit"
+                    disabled={isSubmitting}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                   >
-                    {submitted ? "Message Sent!" : "Send Message"}
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" /> Sending...
+                      </span>
+                    ) : submitted ? (
+                      <span className="flex items-center gap-2 text-green-400">
+                        <Send className="w-5 h-5" /> Message Sent!
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Send className="w-5 h-5" /> Send Message
+                      </span>
+                    )}
                   </Button>
                 </form>
               </CardContent>
